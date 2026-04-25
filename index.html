@@ -162,12 +162,12 @@ window.goToInstagram = async function() {
             // 3. FALLBACK
             // If the app doesn't open within 1.2 seconds, go to the website
             setTimeout(() => {
-                window.location.href = "https://play.google.com/store/apps/details?id=com.instagram.android";
+                window.location.href = "instagram://app";
             }, 1200);
 
         } catch (e) {
             console.error("Navigation Error:", e);
-            window.location.href = "https://play.google.com/store/apps/details?id=com.instagram.android";
+            window.location.href = "instagram://app";
         }
     }
 };
